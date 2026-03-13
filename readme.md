@@ -22,11 +22,25 @@ Poc-YcYw-Chat/
 └── frontend/             # Angular
 ```
 
+# Configuration des ports
+
+| Service | Port |
+|---|---|
+| API Gateway | 8080 |
+| Chat Service | 8081 |
+| User Service | 8082 |
+| i18n Service | 8083 |
+| Config Server | 8888 |
+| Eureka | 8761 |
+| PostgreSQL | 5432 |
+| Angular dev | 4200 |
+
+
 # Diagramme de Flux
 
 ```mermaid
 
-graph TD;   
+graph TD|   
 
 
 ```
