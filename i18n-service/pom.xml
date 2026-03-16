@@ -9,42 +9,26 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.ycyw</groupId>
-	<artifactId>configserver</artifactId>
+	<artifactId>i18n-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>configserver</name>
-	<description>Configuration du serveur</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+	<name>i18n-service</name>
+	<description>I18n Service for translations and formats</description>
 	<properties>
 		<java.version>21</java.version>
 		<spring-cloud.version>2024.0.0</spring-cloud.version>
 	</properties>
 	<dependencies>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-config-server</artifactId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-config</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-devtools</artifactId>
-			<scope>runtime</scope>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -63,7 +47,6 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
 	<build>
 		<plugins>
 			<plugin>
@@ -72,5 +55,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

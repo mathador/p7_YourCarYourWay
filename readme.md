@@ -30,17 +30,34 @@ Poc-YcYw-Chat/
 | Chat Service | 8081 |
 | User Service | 8082 |
 | i18n Service | 8083 |
-| Config Server | 8888 |
+| Config Server | 15000 |
 | Eureka | 8761 |
 | PostgreSQL | 5432 |
 | Angular dev | 4200 |
+
+# Lancement des services
+
+1. Démarrer PostgreSQL : `docker-compose up -d`
+2. Démarrer Eureka Server : `cd eureka-server && mvn spring-boot:run`
+3. Démarrer Config Server : `cd config-server && mvn spring-boot:run`
+4. Démarrer les autres services dans l'ordre : user-service, chat-service, i18n-service, api-gateway
+5. Démarrer le frontend : `cd frontend && npm start`
 
 
 # Diagramme de Flux
 
 ```mermaid
-
-graph TD|   
-
-
+graph TD
+    A[Frontend Angular] --> B[API Gateway]
+    B --> C[User Service]
+    B --> D[Chat Service]
+    B --> E[I18n Service]
+    C --> F[PostgreSQL]
+    D --> F
+    B --> G[Config Server]
+    A --> H[Eureka Server]
+    C --> H
+    D --> H
+    E --> H
+    G --> H
 ```
