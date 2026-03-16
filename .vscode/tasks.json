@@ -1,0 +1,121 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Postgres",
+            "type": "shell",
+            "command": "docker-compose up -d",
+            "options": {},
+            "presentation": {
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Eureka",
+            "type": "shell",
+            "command": "mvn org.springframework.boot:spring-boot-maven-plugin:3.4.1:run",
+            "options": {
+                "cwd": "${workspaceFolder}/eureka-server"
+            },
+            "presentation": {
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Config",
+            "type": "shell",
+            "command": "mvn org.springframework.boot:spring-boot-maven-plugin:3.4.1:run",
+            "options": {
+                "cwd": "${workspaceFolder}/config-server"
+            },
+            "presentation": {
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "User",
+            "dependsOn": [
+                "WaitPostgres"
+            ],
+            "type": "shell",
+            "command": "mvn org.springframework.boot:spring-boot-maven-plugin:3.4.1:run",
+            "options": {
+                "cwd": "${workspaceFolder}/user-service"
+            }
+        },
+        {
+            "label": "Chat",
+            "dependsOn": [
+                "WaitPostgres"
+            ],
+            "type": "shell",
+            "command": "mvn org.springframework.boot:spring-boot-maven-plugin:3.4.1:run",
+            "options": {
+                "cwd": "${workspaceFolder}/chat-service"
+            }
+        },
+        {
+            "label": "WaitPostgres",
+            "dependsOn": [
+                "Postgres"
+            ],
+            "type": "shell",
+            "command": "bash -c 'until docker exec $(docker ps -qf name=postgres) pg_isready -U ycyw_user -d ycyw_db; do sleep 2; done'"
+        },
+        {
+            "label": "I18n",
+            "type": "shell",
+            "command": "mvn org.springframework.boot:spring-boot-maven-plugin:3.4.1:run",
+            "options": {
+                "cwd": "${workspaceFolder}/i18n-service"
+            },
+            "presentation": {
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Gateway",
+            "type": "shell",
+            "command": "mvn org.springframework.boot:spring-boot-maven-plugin:3.4.1:run",
+            "options": {
+                "cwd": "${workspaceFolder}/api-gateway"
+            },
+            "presentation": {
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Frontend",
+            "type": "shell",
+            "command": "npm start",
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "presentation": {
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Start All",
+            "dependsOn": [
+                "Postgres",
+                "Eureka",
+                "Config",
+                "User",
+                "Chat",
+                "I18n",
+                "Gateway",
+                "Frontend"
+            ],
+            "dependsOrder": "parallel"
+        },
+        {
+            "label": "Stop All",
+            "type": "shell",
+            "command": "docker compose down",
+            "presentation": {
+                "panel": "dedicated"
+            }
+        }
+    ]
+}

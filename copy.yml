@@ -1,0 +1,80 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ycyw_db
+      POSTGRES_USER: ycyw_user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ycyw_user -d ycyw_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  eureka:
+    build: ./eureka-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8761:8761"
+
+  config:
+    build: ./config-server
+    depends_on:
+      eureka:
+        condition: service_started
+    ports:
+      - "8888:8888"
+
+  user:
+    build: ./user-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config:
+        condition: service_started
+
+  chat:
+    build: ./chat-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config:
+        condition: service_started
+
+  i18n:
+    build: ./i18n-service
+    depends_on:
+      config:
+        condition: service_started
+
+  gateway:
+    build: ./api-gateway
+    depends_on:
+      user:
+        condition: service_started
+      chat:
+        condition: service_started
+      i18n:
+        condition: service_started
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      gateway:
+        condition: service_started
+
+volumes:
+  postgres_data:
