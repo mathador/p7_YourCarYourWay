@@ -1,0 +1,13 @@
+[ {
+  "id" : "0c07c9f1-9296-488b-aa7a-6037dd5512ec",
+  "username" : "agent",
+  "password" : "agent",
+  "role" : "AGENT",
+  "active" : true
+}, {
+  "id" : "dbe94e13-dfaf-4039-aebb-f0ecbfd1fc8c",
+  "username" : "client",
+  "password" : "client",
+  "role" : "CLIENT",
+  "active" : true
+} ]

@@ -1,0 +1,71 @@
+<div class="chat-container">
+    <div class="chat-sidebar">
+        <div class="sidebar-header">
+            <h2>Connected Users</h2>
+            <span class="user-count">{{ onlineUsers().length }}</span>
+        </div>
+
+        <div class="current-user">
+            @if (currentUser()) {
+            <div class="user-card current">
+                <div class="user-avatar">{{ currentUser()!.username.charAt(0).toUpperCase() }}</div>
+                <div class="user-info">
+                    <p class="username">{{ currentUser()!.username }}</p>
+                    <span class="role" [class]="getRoleClass(currentUser()!.role)">
+                        {{ currentUser()!.role }}
+                    </span>
+                </div>
+            </div>
+            }
+        </div>
+
+        <div class="online-users">
+            <p class="section-title">Online Now</p>
+            @for (user of onlineUsers(); track user.id) {
+            <div class="user-card" [class.highlight]="user.id === currentUser()?.id">
+                <div class="user-avatar">{{ user.username.charAt(0).toUpperCase() }}</div>
+                <div class="user-info">
+                    <p class="username">{{ user.username }}</p>
+                    <span class="role" [class]="getRoleClass(user.role)">
+                        {{ user.role }}
+                    </span>
+                </div>
+                <div class="status-indicator"></div>
+            </div>
+            }
+        </div>
+
+        <button class="logout-button" (click)="logout()" [disabled]="loadingLogout()">
+            {{ loadingLogout() ? 'Disconnecting...' : 'Disconnect' }}
+        </button>
+    </div>
+
+    <div class="chat-main">
+        <div class="chat-header">
+            <h1>Chat Room</h1>
+        </div>
+
+        <div class="messages-container">
+            @for (msg of messages(); track msg.id) {
+            <div class="message" [class.own]="msg.senderUsername === 'You'">
+                <div class="message-avatar">{{ msg.senderUsername.charAt(0).toUpperCase() }}</div>
+                <div class="message-content">
+                    <p class="sender-name">{{ msg.senderUsername }}</p>
+                    <p class="message-text">{{ msg.content }}</p>
+                    <span class="timestamp">{{ formatTime(msg.timestamp) }}</span>
+                </div>
+            </div>
+            }
+        </div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input type="text" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()"
+                    placeholder="Type a message..." class="message-input" />
+                <button (click)="sendMessage()" [disabled]="!newMessage().trim()" class="send-button">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
