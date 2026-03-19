@@ -23,46 +23,105 @@ export class ChatService {
     private onlineUsersSubject = new BehaviorSubject<User[]>([]);
     public onlineUsers$ = this.onlineUsersSubject.asObservable();
 
+    private defaultChannelId = 'general';
+    private pollingUsersSubscription: any;
+    private pollingMessagesSubscription: any;
+
     constructor(
         private http: HttpClient,
         private authService: AuthService
     ) {
+        this.authService.isAuthenticated$.subscribe(isAuthenticated => {
+            if (isAuthenticated) {
+                this.startPolling();
+            } else {
+                this.stopPolling();
+                this.onlineUsersSubject.next([]);
+                this.messagesSubject.next([]);
+            }
+        });
+    }
+
+    private startPolling(): void {
         this.startPollingUsers();
+        this.startPollingMessages();
+    }
+
+    private stopPolling(): void {
+        if (this.pollingUsersSubscription) {
+            this.pollingUsersSubscription.unsubscribe();
+        }
+        if (this.pollingMessagesSubscription) {
+            this.pollingMessagesSubscription.unsubscribe();
+        }
     }
 
     private startPollingUsers(): void {
-        interval(2000)
+        this.pollingUsersSubscription = interval(2000)
             .pipe(
-                switchMap(() => this.http.get<User[]>(`${this.apiUrl}/users`)),
+                switchMap(() => {
+                    const token = this.authService.getToken();
+                    if (!token) return [];
+                    return this.http.get<User[]>(`${this.apiUrl}/users`, {
+                        headers: { 'X-Auth-Token': token }
+                    });
+                }),
                 shareReplay(1)
             )
             .subscribe({
-                next: (users) => this.onlineUsersSubject.next(users.filter(u => u.active)),
+                next: (users) => {
+                    if (Array.isArray(users)) {
+                        this.onlineUsersSubject.next(users.filter(u => u.active));
+                    }
+                },
                 error: (err) => console.error('Error fetching online users:', err)
+            });
+    }
+
+    private startPollingMessages(): void {
+        this.pollingMessagesSubscription = interval(1000)
+            .pipe(
+                switchMap(() => {
+                    const token = this.authService.getToken();
+                    if (!token) return [];
+                    return this.http.get<ChatMessage[]>(`${this.apiUrl}/chat/channels/${this.defaultChannelId}/messages`, {
+                        headers: { 'X-Auth-Token': token }
+                    });
+                }),
+                shareReplay(1)
+            )
+            .subscribe({
+                next: (messages) => {
+                    if (Array.isArray(messages)) {
+                        // Transformer les messages pour l'affichage si nécessaire
+                        const formattedMessages = messages.map(m => ({
+                            ...m,
+                            senderUsername: m.senderUsername || (m as any).from // Compatibilité avec MessageDto.from du backend
+                        }));
+                        this.messagesSubject.next(formattedMessages);
+                    }
+                },
+                error: (err) => console.error('Error fetching messages:', err)
             });
     }
 
     sendMessage(content: string): void {
         const token = this.authService.getToken();
-        if (!token) return;
+        let currentUser: User | null = null;
+        this.authService.currentUser$.subscribe(u => currentUser = u);
 
-        const message: ChatMessage = {
-            id: Math.random().toString(36).substr(2, 9),
-            senderId: 'current-user',
-            senderUsername: 'You',
-            content: content,
-            timestamp: Date.now()
-        };
+        if (!token || !currentUser) return;
 
-        const messages = this.messagesSubject.value;
-        this.messagesSubject.next([...messages, message]);
-
-        // Simuler l'envoi au serveur
-        this.http.post(`${this.apiUrl}/chat/messages`, {
-            content
+        // On envoie le message au serveur (le polling s'occupera de l'afficher)
+        this.http.post(`${this.apiUrl}/chat/channels/${this.defaultChannelId}/messages`, {
+            from: (currentUser as User).username,
+            content: content
         }, {
             headers: { 'X-Auth-Token': token }
         }).subscribe({
+            next: () => {
+                // Optionnel: on pourrait forcer un rafraîchissement immédiat ici
+            },
             error: (err) => console.error('Error sending message:', err)
         });
     }

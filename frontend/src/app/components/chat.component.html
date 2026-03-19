@@ -47,8 +47,8 @@
 
         <div class="messages-container">
             @for (msg of messages(); track msg.id) {
-            <div class="message" [class.own]="msg.senderUsername === 'You'">
-                <div class="message-avatar">{{ msg.senderUsername.charAt(0).toUpperCase() }}</div>
+            <div class="message" [class.own]="msg.senderUsername === currentUser()?.username">
+                <div class="message-avatar">{{ (msg.senderUsername || 'U').charAt(0).toUpperCase() }}</div>
                 <div class="message-content">
                     <p class="sender-name">{{ msg.senderUsername }}</p>
                     <p class="message-text">{{ msg.content }}</p>

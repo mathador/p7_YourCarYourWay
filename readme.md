@@ -203,3 +203,68 @@ graph TD
     G --> H
     
 ```
+
+# Scéma de la structure des données:
+```mermaid
+class User {
+        +int id
+        +string email
+        +string first_name
+        +string last_name
+        +string password_hash
+        +Enum role
+        +bool is_psh_profile
+    }
+    
+    class Agency {
+        +int id
+        +string name
+        +string city
+        +string timezone
+    }
+    
+    class Vehicle {
+        +int id
+        +string acriss_code
+        +string brand
+        +string model
+        +Enum status
+        +float price_per_day
+    }
+    
+    class Reservation {
+        +int id
+        +datetime start_date
+        +datetime end_date
+        +float amount
+        +string payment_id
+        +Enum status
+    }
+
+        class ChatSession {
+        +uuid session_id
+        +int user_id? 
+        +string guest_name?
+        +datetime created_at
+        +string country_code
+        +Enum status
+    }
+
+    class ChatMessage {
+        +int id
+        +uuid session_id
+        +int sender_id?
+        +string content
+        +datetime timestamp_utc
+        +string language_code
+    }
+
+    User "0..1" -- "*" ChatSession : initie (si connecté)
+    ChatSession "1" -- "*" ChatMessage : contient
+    User "0..1" -- "*" ChatMessage : envoie (Agent ou Client)
+
+    User "1" -- "*" Reservation : effectue
+    Agency "1" -- "*" Vehicle : possède
+    Vehicle "1" -- "*" Reservation : est loué
+
+```

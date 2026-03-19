@@ -41,10 +41,4 @@ export class LoginComponent {
             }
         });
     }
-
-    demoLogin(username: string): void {
-        this.username.set(username);
-        this.password.set(username);
-        this.login();
-    }
 }

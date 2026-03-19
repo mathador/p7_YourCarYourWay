@@ -1,7 +1,7 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 export interface LoginRequest {
@@ -64,16 +64,29 @@ export class AuthService {
 
     logout(): Observable<any> {
         const token = this.getStoredToken();
+        const clearLocalState = () => {
+            if (isPlatformBrowser(this.platformId)) {
+                localStorage.removeItem('auth_token');
+            }
+            this.tokenSubject.next(null);
+            this.isAuthenticatedSubject.next(false);
+            this.currentUserSubject.next(null);
+        };
+
+        if (!token) {
+            clearLocalState();
+            return of(null);
+        }
+
         return this.http.post(`${this.apiUrl}/logout`, {}, {
-            headers: { 'X-Auth-Token': token || '' }
+            headers: { 'X-Auth-Token': token }
         }).pipe(
-            tap(() => {
-                if (isPlatformBrowser(this.platformId)) {
-                    localStorage.removeItem('auth_token');
+            tap({
+                next: clearLocalState,
+                error: (err) => {
+                    console.error('Logout API failed, clearing local state anyway', err);
+                    clearLocalState();
                 }
-                this.tokenSubject.next(null);
-                this.isAuthenticatedSubject.next(false);
-                this.currentUserSubject.next(null);
             })
         );
     }

@@ -26,17 +26,5 @@
                 {{ loading() ? 'Connecting...' : 'Sign In' }}
             </button>
         </form>
-
-        <div class="demo-section">
-            <p class="demo-label">Demo Accounts:</p>
-            <div class="demo-buttons">
-                <button type="button" class="demo-btn agent-btn" (click)="demoLogin('agent')" [disabled]="loading()">
-                    Agent Demo
-                </button>
-                <button type="button" class="demo-btn client-btn" (click)="demoLogin('client')" [disabled]="loading()">
-                    Client Demo
-                </button>
-            </div>
-        </div>
     </div>
 </div>

@@ -101,7 +101,11 @@ public class UserController {
     }
 
     private UserResponse toResponse(User user) {
-        return new UserResponse(user.getId(), user.getUsername(), user.getRole(), user.isActive());
+        boolean online = userService.isUserOnline(user.getId());
+        if (online) {
+            System.out.println("DEBUG: User " + user.getUsername() + " is currently ONLINE");
+        }
+        return new UserResponse(user.getId(), user.getUsername(), user.getRole(), online);
     }
 
     private static class LoginResponse {
