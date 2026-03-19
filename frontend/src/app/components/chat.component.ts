@@ -53,7 +53,8 @@ export class ChatComponent implements OnInit {
                 this.router.navigate(['/login']);
             },
             error: () => {
-                this.loadingLogout.set(false);
+                // Navigate anyway as AuthService already cleared local state
+                this.router.navigate(['/login']);
             }
         });
     }

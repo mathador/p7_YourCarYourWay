@@ -9,23 +9,24 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class UserService {
 
     private final JpaUserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final Map<String, String> tokenStore = Collections.synchronizedMap(new HashMap<>());
+
+    // Token -> UserID (Integer)
+    private final Map<String, Integer> tokenStore = new ConcurrentHashMap<>();
 
     public UserService(JpaUserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+
         ensureDefaultUsers();
     }
 
@@ -33,7 +34,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public Optional<User> getUserById(String id) {
+    public Optional<User> getUserById(Integer id) {
         return userRepository.findById(id);
     }
 
@@ -46,11 +47,11 @@ public class UserService {
         if (existing.isPresent()) {
             throw new IllegalArgumentException("Username already exists");
         }
-        var user = new User(request.getUsername(), request.getPassword(), request.getRole());
+        var user = new User(request.getUsername(), passwordEncoder.encode(request.getPassword()), request.getRole());
         return userRepository.save(user);
     }
 
-    public boolean deleteUser(String id) {
+    public boolean deleteUser(Integer id) {
         if (!userRepository.existsById(id)) {
             return false;
         }
@@ -58,70 +59,50 @@ public class UserService {
         return true;
     }
 
-    public Optional<String> login(LoginRequest request) {
+    public String login(LoginRequest request) {
         var userOpt = userRepository.findByUsernameIgnoreCase(request.getUsername());
         if (userOpt.isEmpty()) {
-            return Optional.empty();
+            return null;
         }
         var user = userOpt.get();
-        if (!user.isActive() || !passwordMatchesAndMaybeMigrate(user, request.getPassword())) {
-            return Optional.empty();
+        if (!user.isActive() || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            return null;
         }
         var token = generateToken(user.getId());
         tokenStore.put(token, user.getId());
-        System.out.println("DEBUG: User " + user.getUsername() + " (ID: " + user.getId() + ") logged in with token: " + token);
-        return Optional.of(token);
+        return token;
     }
 
-    public boolean isUserOnline(String userId) {
-        boolean online = tokenStore.values().contains(userId);
-        // System.out.println("DEBUG: Checking online status for ID " + userId + ": " + online);
-        return online;
+    public boolean isUserOnline(Integer userId) {
+        return tokenStore.values().contains(userId);
     }
 
-    public List<String> getOnlineUserIds() {
-        return List.copyOf(tokenStore.values());
+    public List<Integer> getOnlineUserIds() {
+        return tokenStore.values().stream().toList();
+    }
+
+    public Optional<User> getUserByToken(String token) {
+        Integer userId = tokenStore.get(token);
+        if (userId == null) {
+            return Optional.empty();
+        }
+        return userRepository.findById(userId);
     }
 
     public void logout(String token) {
-        String userId = tokenStore.remove(token);
-        System.out.println("DEBUG: Logout for token " + token + ". Removed User ID: " + userId);
+        tokenStore.remove(token);
     }
 
-    public Optional<String> whoAmI(String token) {
-        return Optional.ofNullable(tokenStore.get(token));
-    }
-
-    private String generateToken(String userId) {
+    private String generateToken(Integer userId) {
         return "token-" + userId + "/" + Instant.now().toEpochMilli();
     }
 
     private void ensureDefaultUsers() {
         if (userRepository.count() == 0) {
-            var agent = new User("agent", "agent", UserRole.AGENT);
-            var client = new User("client", "client", UserRole.CLIENT);
+            var agent = new User("agent", passwordEncoder.encode("agent"), UserRole.AGENT);
+            var client = new User("client", passwordEncoder.encode("client"), UserRole.CLIENT);
             userRepository.save(agent);
             userRepository.save(client);
         }
-    }
-
-    /**
-     * Compat rétro: si password_hash existe => BCrypt.
-     * Sinon => on accepte l'ancien champ password (en clair) et on migre vers password_hash.
-     */
-    private boolean passwordMatchesAndMaybeMigrate(User user, String rawPassword) {
-        var hash = user.getPasswordHash();
-        if (hash != null && !hash.isBlank()) {
-            return passwordEncoder.matches(rawPassword, hash);
-        }
-
-        // legacy: plain-text
-        if (user.getPassword() == null || !user.getPassword().equals(rawPassword)) {
-            return false;
-        }
-
-        user.setPasswordHash(passwordEncoder.encode(rawPassword));
-        userRepository.save(user);
-        return true;
     }
 }

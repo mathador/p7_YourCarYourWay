@@ -4,17 +4,18 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
-import java.util.UUID;
 
 @Entity
 @Table(name = "users")
 public class User {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -27,9 +28,6 @@ public class User {
 
     @Column(name = "last_name")
     private String lastName;
-
-    @Column(nullable = false)
-    private String password;
 
     @Column(name = "password_hash")
     private String passwordHash;
@@ -48,21 +46,20 @@ public class User {
         // required for JPA
     }
 
-    public User(String username, String password, UserRole role) {
-        this.id = UUID.randomUUID().toString();
+    public User(String username, String passwordHash, UserRole role) {
         this.username = username;
-        this.email = username; // par défaut: compat avec l'API actuelle
-        this.password = password;
+        this.email = username;
+        this.passwordHash = passwordHash;
         this.role = role;
         this.active = true;
         this.pshProfile = Boolean.FALSE;
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -96,14 +93,6 @@ public class User {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getPasswordHash() {

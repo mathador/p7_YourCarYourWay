@@ -1,91 +1,86 @@
 package com.ycyw.chatservice.service;
 
-import com.ycyw.chatservice.dto.ChannelDto;
 import com.ycyw.chatservice.dto.MessageDto;
-import com.ycyw.chatservice.model.ChatChannel;
-import com.ycyw.chatservice.model.ChatChannelMember;
+import com.ycyw.chatservice.dto.SessionDto;
 import com.ycyw.chatservice.model.ChatMessage;
-import com.ycyw.chatservice.repository.ChatChannelMemberRepository;
-import com.ycyw.chatservice.repository.ChatChannelRepository;
+import com.ycyw.chatservice.model.ChatSession;
 import com.ycyw.chatservice.repository.ChatMessageRepository;
+import com.ycyw.chatservice.repository.ChatSessionRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class ChatService {
 
-    private final ChatChannelRepository channelRepository;
-    private final ChatChannelMemberRepository memberRepository;
+    private final ChatSessionRepository sessionRepository;
     private final ChatMessageRepository messageRepository;
 
     public ChatService(
-            ChatChannelRepository channelRepository,
-            ChatChannelMemberRepository memberRepository,
+            ChatSessionRepository sessionRepository,
             ChatMessageRepository messageRepository
     ) {
-        this.channelRepository = channelRepository;
-        this.memberRepository = memberRepository;
+        this.sessionRepository = sessionRepository;
         this.messageRepository = messageRepository;
     }
 
-    public List<ChannelDto> listChannels() {
-        return channelRepository.findAll().stream()
-                .map(ch -> toDto(ch.getId()))
+    public List<SessionDto> listSessions() {
+        return sessionRepository.findAll().stream()
+                .map(this::toDto)
                 .toList();
     }
 
-    public ChannelDto ensureChannel(String channelId) {
-        if (!channelRepository.existsById(channelId)) {
-            channelRepository.save(new ChatChannel(channelId));
+    public SessionDto createSession(Integer userId, String guestName, String countryCode) {
+        var session = new ChatSession(UUID.randomUUID(), userId, guestName, countryCode);
+        return toDto(sessionRepository.save(session));
+    }
+
+    public SessionDto getSession(UUID sessionId) {
+        return sessionRepository.findById(sessionId)
+                .map(this::toDto)
+                .orElseThrow(() -> new IllegalArgumentException("Session not found: " + sessionId));
+    }
+
+    public MessageDto sendMessage(UUID sessionId, Integer senderId, String senderUsername, String content, String languageCode) {
+        if (!sessionRepository.existsById(sessionId)) {
+            throw new IllegalArgumentException("Session not found: " + sessionId);
         }
-        return toDto(channelId);
-    }
-
-    public ChannelDto joinChannel(String channelId, String username) {
-        ensureChannel(channelId);
-        if (!memberRepository.existsByChannelIdAndUsernameIgnoreCase(channelId, username)) {
-            memberRepository.save(new ChatChannelMember(channelId, username));
-        }
-        return toDto(channelId);
-    }
-
-    public ChannelDto leaveChannel(String channelId, String username) {
-        ensureChannel(channelId);
-        memberRepository.deleteByChannelIdAndUsernameIgnoreCase(channelId, username);
-        return toDto(channelId);
-    }
-
-    public MessageDto sendMessage(String channelId, String from, String content) {
-        ensureChannel(channelId);
-        var now = Instant.now();
-        var msg = new ChatMessage(UUID.randomUUID().toString(), channelId, from, content, now);
+        var msg = new ChatMessage(sessionId, senderId, senderUsername, content, languageCode);
         messageRepository.save(msg);
-        return new MessageDto(msg.getId(), msg.getChannelId(), msg.getFrom(), msg.getContent(), msg.getTimestamp());
+        return toMessageDto(msg);
     }
 
-    public List<MessageDto> getHistory(String channelId, int limit) {
-        ensureChannel(channelId);
+    public List<MessageDto> getHistory(UUID sessionId, int limit) {
         var page = PageRequest.of(0, limit);
-        var desc = messageRepository.findByChannelIdOrderByTimestampDesc(channelId, page);
-        // API attend l'ordre chronologique croissant
+        var desc = messageRepository.findBySessionIdOrderByTimestampUtcDesc(sessionId, page);
         var asc = desc.reversed();
         return asc.stream()
-                .map(m -> new MessageDto(m.getId(), m.getChannelId(), m.getFrom(), m.getContent(), m.getTimestamp()))
+                .map(this::toMessageDto)
                 .toList();
     }
 
-    private ChannelDto toDto(String channelId) {
-        List<ChatChannelMember> members = memberRepository.findByChannelId(channelId);
-        Set<String> usernames = members.stream()
-                .map(ChatChannelMember::getUsername)
-                .collect(Collectors.toSet());
-        return new ChannelDto(channelId, usernames);
+    private SessionDto toDto(ChatSession session) {
+        return new SessionDto(
+                session.getSessionId(),
+                session.getUserId(),
+                session.getGuestName(),
+                session.getCreatedAt(),
+                session.getCountryCode(),
+                session.getStatus()
+        );
+    }
+
+    private MessageDto toMessageDto(ChatMessage m) {
+        return new MessageDto(
+                m.getId(),
+                m.getSessionId(),
+                m.getSenderId(),
+                m.getSenderUsername(),
+                m.getContent(),
+                m.getTimestampUtc(),
+                m.getLanguageCode()
+        );
     }
 }
-

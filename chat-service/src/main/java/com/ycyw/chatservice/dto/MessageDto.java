@@ -1,12 +1,14 @@
 package com.ycyw.chatservice.dto;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record MessageDto(
-        String id,
-        String channelId,
-        String from,
+        Integer id,
+        UUID sessionId,
+        Integer senderId,
+        String senderUsername,
         String content,
-        Instant timestamp
+        Instant timestampUtc,
+        String languageCode
 ) {}
-

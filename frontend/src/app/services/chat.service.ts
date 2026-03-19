@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, interval } from 'rxjs';
-import { switchMap, shareReplay } from 'rxjs/operators';
+import { BehaviorSubject, Observable, interval, of } from 'rxjs';
+import { switchMap, shareReplay, catchError } from 'rxjs/operators';
 import { AuthService, User } from './auth.service';
 
 export interface ChatMessage {
-    id: string;
-    senderId: string;
+    id: number;
+    sessionId: string;
+    senderId: number;
     senderUsername: string;
     content: string;
-    timestamp: number;
+    timestamp: any;
 }
 
 @Injectable({
@@ -23,7 +24,7 @@ export class ChatService {
     private onlineUsersSubject = new BehaviorSubject<User[]>([]);
     public onlineUsers$ = this.onlineUsersSubject.asObservable();
 
-    private defaultChannelId = 'general';
+    private defaultChannelId = '00000000-0000-0000-0000-000000000000';
     private pollingUsersSubscription: any;
     private pollingMessagesSubscription: any;
 
@@ -33,11 +34,38 @@ export class ChatService {
     ) {
         this.authService.isAuthenticated$.subscribe(isAuthenticated => {
             if (isAuthenticated) {
+                this.ensureDefaultSession();
                 this.startPolling();
             } else {
                 this.stopPolling();
                 this.onlineUsersSubject.next([]);
                 this.messagesSubject.next([]);
+            }
+        });
+    }
+
+    private ensureDefaultSession(): void {
+        const token = this.authService.getToken();
+        if (!token) return;
+        
+        this.http.post(`${this.apiUrl}/chat/sessions`, {
+            userId: 1,
+            guestName: 'System',
+            countryCode: 'FR'
+        }, {
+            headers: { 'X-Auth-Token': token }
+        }).subscribe({
+            next: () => this.loadSessions(token),
+            error: () => this.loadSessions(token)
+        });
+    }
+
+    private loadSessions(token: string): void {
+        this.http.get<any[]>(`${this.apiUrl}/chat/sessions`, {
+            headers: { 'X-Auth-Token': token }
+        }).subscribe(sessions => {
+            if (sessions && sessions.length > 0) {
+                this.defaultChannelId = sessions[0].sessionId;
             }
         });
     }
@@ -48,12 +76,8 @@ export class ChatService {
     }
 
     private stopPolling(): void {
-        if (this.pollingUsersSubscription) {
-            this.pollingUsersSubscription.unsubscribe();
-        }
-        if (this.pollingMessagesSubscription) {
-            this.pollingMessagesSubscription.unsubscribe();
-        }
+        if (this.pollingUsersSubscription) this.pollingUsersSubscription.unsubscribe();
+        if (this.pollingMessagesSubscription) this.pollingMessagesSubscription.unsubscribe();
     }
 
     private startPollingUsers(): void {
@@ -61,17 +85,17 @@ export class ChatService {
             .pipe(
                 switchMap(() => {
                     const token = this.authService.getToken();
-                    if (!token) return [];
-                    return this.http.get<User[]>(`${this.apiUrl}/users`, {
+                    if (!token) return of([]);
+                    return this.http.get<User[]>(`${this.apiUrl}/users/online`, {
                         headers: { 'X-Auth-Token': token }
-                    });
+                    }).pipe(catchError(() => of([])));
                 }),
                 shareReplay(1)
             )
             .subscribe({
                 next: (users) => {
                     if (Array.isArray(users)) {
-                        this.onlineUsersSubject.next(users.filter(u => u.active));
+                        this.onlineUsersSubject.next(users);
                     }
                 },
                 error: (err) => console.error('Error fetching online users:', err)
@@ -83,20 +107,23 @@ export class ChatService {
             .pipe(
                 switchMap(() => {
                     const token = this.authService.getToken();
-                    if (!token) return [];
-                    return this.http.get<ChatMessage[]>(`${this.apiUrl}/chat/channels/${this.defaultChannelId}/messages`, {
+                    if (!token || !this.defaultChannelId || this.defaultChannelId === '00000000-0000-0000-0000-000000000000') return of([]);
+                    return this.http.get<any[]>(`${this.apiUrl}/chat/sessions/${this.defaultChannelId}/messages`, {
                         headers: { 'X-Auth-Token': token }
-                    });
+                    }).pipe(catchError(() => of([])));
                 }),
                 shareReplay(1)
             )
             .subscribe({
                 next: (messages) => {
                     if (Array.isArray(messages)) {
-                        // Transformer les messages pour l'affichage si nécessaire
                         const formattedMessages = messages.map(m => ({
-                            ...m,
-                            senderUsername: m.senderUsername || (m as any).from // Compatibilité avec MessageDto.from du backend
+                            id: m.id,
+                            sessionId: m.sessionId,
+                            senderId: m.senderId,
+                            senderUsername: m.senderUsername || (m.senderId ? m.senderId.toString() : 'Guest'),
+                            content: m.content,
+                            timestamp: m.timestampUtc
                         }));
                         this.messagesSubject.next(formattedMessages);
                     }
@@ -110,18 +137,16 @@ export class ChatService {
         let currentUser: User | null = null;
         this.authService.currentUser$.subscribe(u => currentUser = u);
 
-        if (!token || !currentUser) return;
+        if (!token || !currentUser || !this.defaultChannelId) return;
 
-        // On envoie le message au serveur (le polling s'occupera de l'afficher)
-        this.http.post(`${this.apiUrl}/chat/channels/${this.defaultChannelId}/messages`, {
-            from: (currentUser as User).username,
+        this.http.post(`${this.apiUrl}/chat/sessions/${this.defaultChannelId}/messages`, {
+            senderId: (currentUser as User).id,
+            senderUsername: (currentUser as User).username,
             content: content
         }, {
             headers: { 'X-Auth-Token': token }
         }).subscribe({
-            next: () => {
-                // Optionnel: on pourrait forcer un rafraîchissement immédiat ici
-            },
+            next: () => {},
             error: (err) => console.error('Error sending message:', err)
         });
     }
