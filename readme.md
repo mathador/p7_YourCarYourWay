@@ -19,6 +19,7 @@ Poc-YcYw-Chat/
 ├── config-server/        # Spring Cloud Config
 ├── eureka-server/        # Découverte dynamique des API
 ├── i18n-service/         # Traductions, devises, formats
+├── payment-service/      # Paiements via Stripe Mock
 ├── user-service/         # Auth + profil utilisateur
 └── frontend/             # Angular
 ```
@@ -31,6 +32,7 @@ Poc-YcYw-Chat/
 | User Service | 8082 | http://localhost:8082/swagger-ui/index.html | Authentification & gestion utilisateurs |
 | Chat Service | 8081 | http://localhost:8081/swagger-ui/index.html | Chat et messages |
 | i18n Service | 8083 | http://localhost:8083/swagger-ui/index.html | Traductions & formats |
+| Payment Service | 8084 | http://localhost:8084/swagger-ui/index.html | Paiements Stripe Mock |
 | Config Server | 15000 | http://localhost:15000/application/default | Configuration centralisée (Spring Cloud Config) |
 | Eureka | 8761 | http://localhost:8761 | Service Discovery |
 | PostgreSQL | 5432 | - | Base de données |
@@ -114,6 +116,19 @@ curl -X GET "http://localhost:8080/i18n/translate?locale=fr-FR&key=greeting"
 curl -X GET "http://localhost:8080/i18n/format?locale=fr-FR&datetime=2026-03-16T15:34:00"
 ```
 
+## Payment Service (`/payment`)
+| Endpoint | Method | Description | Auth |
+|---|---|---|---|
+| `/payment/charge` | POST | Initie un paiement Stripe Mock | ❌ |
+| `/payment/health` | GET | Healthcheck du service | ❌ |
+
+**Exemple Payment:**
+```bash
+curl -X POST http://localhost:8080/payment/charge \
+  -H "Content-Type: application/json" \
+  -d '{"amount":"2000","currency":"eur","description":"Location voiture","paymentMethodId":"pm_card_visa"}'
+```
+
 ---
 
 # Lancement de l'application complète
@@ -146,6 +161,10 @@ mvn org.springframework.boot:spring-boot-maven-plugin:3.4.1:run
 cd i18n-service
 mvn org.springframework.boot:spring-boot-maven-plugin:3.4.1:run
 
+# Payment Service (nouvel onglet)
+cd payment-service
+mvn org.springframework.boot:spring-boot-maven-plugin:3.4.1:run
+
 # API Gateway (nouvel onglet)
 cd api-gateway
 mvn org.springframework.boot:spring-boot-maven-plugin:3.4.1:run
@@ -173,14 +192,14 @@ L'application sera accessible à **http://localhost:4200**
 
 # Architecture Chat
 
-- **Frontend**: Angular 19+ (Couleurs: Orange #FF6B35, Bleu #004E89)
+- **Frontend**: Angular 19+ (Couleurs alignées sur le logo : Orange #FF441A, Bleu #1D55C4)
 - **Communication**: API Gateway → User Service + Chat Service
 - **Auth**: Token-based via header `X-Auth-Token`
 - **State Mgmt**: RxJS BehaviorSubjects
 - **UI Features**:
   - Sidebar avec liste utilisateurs connectés
   - Affichage des messages avec timestamps
-  - Rôles visuellement différenciés (Agent orange, Client bleu)
+  - Rôles visuellement différenciés (Agent orange-rouge #FF441A, Client bleu #1D55C4)
   - Déconnexion utilisateur
 
 
@@ -193,6 +212,7 @@ graph TD
     B --> C[User Service]
     B --> D[Chat Service]
     B --> E[I18n Service]
+    B --> I[Payment Service]
     C --> F[PostgreSQL]
     D --> F
     B --> G[Config Server]
@@ -200,6 +220,7 @@ graph TD
     C --> H
     D --> H
     E --> H
+    I --> H
     G --> H
     
 ```

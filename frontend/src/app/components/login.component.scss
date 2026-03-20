@@ -3,7 +3,7 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #FF6B35 0%, #004E89 100%);
+    background: linear-gradient(135deg, #FF441A 0%, #1D55C4 100%);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .brand-title {
-    color: #004E89;
+    color: #1D55C4;
     font-size: 28px;
     font-weight: 700;
     margin: 0;
@@ -30,7 +30,7 @@
 }
 
 .subtitle {
-    color: #FF6B35;
+    color: #FF441A;
     font-size: 14px;
     margin-top: 8px;
     margin-bottom: 0;
@@ -48,7 +48,7 @@
 }
 
 .form-label {
-    color: #004E89;
+    color: #1D55C4;
     font-weight: 600;
     margin-bottom: 8px;
     font-size: 14px;
@@ -63,8 +63,8 @@
 
     &:focus {
         outline: none;
-        border-color: #FF6B35;
-        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        border-color: #FF441A;
+        box-shadow: 0 0 0 3px rgba(255, 68, 26, 0.1);
     }
 
     &:disabled {
@@ -83,7 +83,7 @@
 }
 
 .login-button {
-    background: linear-gradient(135deg, #FF6B35 0%, #E85A2C 100%);
+    background: linear-gradient(135deg, #FF441A 0%, #D83A16 100%);
     color: white;
     border: none;
     padding: 12px 24px;
@@ -97,7 +97,7 @@
 
     &:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        box-shadow: 0 6px 20px rgba(255, 68, 26, 0.4);
     }
 
     &:active:not(:disabled) {
@@ -117,7 +117,7 @@
 }
 
 .demo-label {
-    color: #004E89;
+    color: #1D55C4;
     font-size: 13px;
     font-weight: 600;
     margin: 0 0 12px 0;
@@ -133,7 +133,7 @@
 .demo-btn {
     flex: 1;
     padding: 10px 12px;
-    border: 2px solid #004E89;
+    border: 2px solid #1D55C4;
     border-radius: 8px;
     font-size: 12px;
     font-weight: 600;
@@ -144,7 +144,7 @@
 
     &:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 78, 137, 0.2);
+        box-shadow: 0 4px 12px rgba(29, 85, 196, 0.2);
     }
 
     &:disabled {
@@ -154,19 +154,19 @@
 }
 
 .agent-btn {
-    color: #FF6B35;
-    border-color: #FF6B35;
+    color: #FF441A;
+    border-color: #FF441A;
 
     &:hover:not(:disabled) {
-        background-color: rgba(255, 107, 53, 0.05);
+        background-color: rgba(255, 68, 26, 0.05);
     }
 }
 
 .client-btn {
-    color: #004E89;
-    border-color: #004E89;
+    color: #1D55C4;
+    border-color: #1D55C4;
 
     &:hover:not(:disabled) {
-        background-color: rgba(0, 78, 137, 0.05);
+        background-color: rgba(29, 85, 196, 0.05);
     }
 }

@@ -74,6 +74,17 @@
             }
         },
         {
+            "label": "Payment",
+            "type": "shell",
+            "command": "mvn org.springframework.boot:spring-boot-maven-plugin:3.4.1:run",
+            "options": {
+                "cwd": "${workspaceFolder}/payment-service"
+            },
+            "presentation": {
+                "panel": "dedicated"
+            }
+        },
+        {
             "label": "Gateway",
             "type": "shell",
             "command": "mvn org.springframework.boot:spring-boot-maven-plugin:3.4.1:run",
@@ -101,13 +112,13 @@
                 "Postgres",
                 "Eureka",
                 "Config",
-                "User",
-                "Chat",
                 "I18n",
+                "Payment",
                 "Gateway",
                 "Frontend"
             ],
-            "dependsOrder": "parallel"
+            "dependsOrder": "parallel",
+            "problemMatcher": []
         },
         {
             "label": "Stop All",
