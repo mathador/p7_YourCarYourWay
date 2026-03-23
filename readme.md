@@ -208,15 +208,24 @@ L'application sera accessible à **http://localhost:4200**
 ```mermaid
 
 graph TD
-    A[Frontend Angular] --> B[API Gateway]
-    B --> C[User Service]
-    B --> D[Chat Service]
-    B --> E[I18n Service]
-    B --> I[Payment Service]
-    C --> F[PostgreSQL]
+    A[Frontend Angular
+    4200] --> B[API Gateway
+    8080]
+    B --> C[User Service
+    8082]
+    B --> D[Chat Service
+    8081]
+    B --> E[I18n Service
+    8083]
+    C --> F[PostgreSQL
+    5432]
     D --> F
-    B --> G[Config Server]
-    B --> H[Eureka Server]
+    B --> G[Config Server
+    15000]
+    B --> H[Eureka Server
+    8761]
+    B --> I[Payment Service]
+    I --> L[Stripe API]
     B --> J[Vehicle Service]
     J --> K[ACRISS]
     C --> H
