@@ -217,17 +217,22 @@ graph TD
     D --> F
     B --> G[Config Server]
     B --> H[Eureka Server]
+    B --> J[Vehicle Service]
+    J --> K[ACRISS]
     C --> H
     D --> H
     E --> H
     I --> H
+    J --> H
     G --> H
     
 ```
 
 # Scéma de la structure des données:
 ```mermaid
-class User {
+classDiagram
+
+    class User {
         +int id
         +string email
         +string first_name
