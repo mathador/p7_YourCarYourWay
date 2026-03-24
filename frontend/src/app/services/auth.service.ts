@@ -66,7 +66,7 @@ export class AuthService {
         const token = this.getStoredToken();
         const clearLocalState = () => {
             if (isPlatformBrowser(this.platformId)) {
-                localStorage.removeItem('auth_token');
+                localStorage.clear();
             }
             this.tokenSubject.next(null);
             this.isAuthenticatedSubject.next(false);

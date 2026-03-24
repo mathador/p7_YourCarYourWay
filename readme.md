@@ -240,6 +240,7 @@ graph TD;
 
 # Scéma de la structure des données:
 ```mermaid
+
 classDiagram
 
     class User {

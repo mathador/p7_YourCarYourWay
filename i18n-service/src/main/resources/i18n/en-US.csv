@@ -1,7 +1,21 @@
 dateFormat,MM/dd/yyyy
 timeFormat,hh:mm a
-greeting,Hello
-farewell,Goodbye
-dateLabel,Date
-timeLabel,Time
-
+brandTitle,Your Car Your Way
+subtitle,Chat Application
+usernameLabel,Username
+usernamePlaceholder,Enter your username
+passwordLabel,Password
+passwordPlaceholder,Enter your password
+errorRequired,Username and password are required
+errorInvalid,Invalid credentials
+connecting,Connecting...
+signIn,Sign In
+connectedUsers,Connected Users
+onlineNow,Online Now
+disconnecting,Disconnecting...
+disconnect,Disconnect
+chatRoom,Chat Room
+typeAMessage,Type a message...
+send,Send
+roleAdmin,Admin
+roleUser,User

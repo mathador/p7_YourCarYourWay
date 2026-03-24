@@ -1,13 +1,15 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { I18nService } from '../services/i18n.service';
+import { LanguageSelectorComponent } from './language-selector/language-selector.component';
 
 @Component({
     selector: 'app-login',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, LanguageSelectorComponent],
     templateUrl: './login.component.html',
     styleUrl: './login.component.scss'
 })
@@ -17,14 +19,13 @@ export class LoginComponent {
     loading = signal(false);
     error = signal('');
 
-    constructor(
-        private authService: AuthService,
-        private router: Router
-    ) { }
+    authService = inject(AuthService);
+    router = inject(Router);
+    i18n = inject(I18nService);
 
     login(): void {
         if (!this.username() || !this.password()) {
-            this.error.set('Username and password are required');
+            this.error.set(this.i18n.t('errorRequired'));
             return;
         }
 
@@ -36,7 +37,7 @@ export class LoginComponent {
                 this.router.navigate(['/chat']);
             },
             error: (err) => {
-                this.error.set('Invalid credentials');
+                this.error.set(this.i18n.t('errorInvalid'));
                 this.loading.set(false);
             }
         });

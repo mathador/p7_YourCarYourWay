@@ -1,9 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, User } from '../services/auth.service';
 import { ChatService, ChatMessage } from '../services/chat.service';
+import { I18nService } from '../services/i18n.service';
 
 @Component({
     selector: 'app-chat',
@@ -19,11 +20,10 @@ export class ChatComponent implements OnInit {
     newMessage = signal('');
     loadingLogout = signal(false);
 
-    constructor(
-        private authService: AuthService,
-        private chatService: ChatService,
-        private router: Router
-    ) { }
+    authService = inject(AuthService);
+    chatService = inject(ChatService);
+    router = inject(Router);
+    i18n = inject(I18nService);
 
     ngOnInit(): void {
         this.authService.currentUser$.subscribe(user => {
@@ -63,8 +63,12 @@ export class ChatComponent implements OnInit {
         return role === 'AGENT' ? 'agent' : 'client';
     }
 
+    getRoleLabel(role: string): string {
+        return role === 'AGENT' ? this.i18n.t('roleAdmin') : this.i18n.t('roleUser');
+    }
+
     formatTime(timestamp: number): string {
         const date = new Date(timestamp);
-        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        return date.toLocaleTimeString(this.i18n.currentLocale(), { hour: '2-digit', minute: '2-digit' });
     }
 }

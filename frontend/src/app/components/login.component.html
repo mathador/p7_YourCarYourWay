@@ -1,29 +1,31 @@
 <div class="login-container">
     <div class="login-card">
+        <app-language-selector></app-language-selector>
+
         <div class="logo-section">
-            <h1 class="brand-title">Your Car Your Way</h1>
-            <p class="subtitle">Chat Application</p>
+            <h1 class="brand-title">{{ i18n.t('brandTitle') }}</h1>
+            <p class="subtitle">{{ i18n.t('subtitle') }}</p>
         </div>
 
         <form (ngSubmit)="login()" class="login-form">
             <div class="form-group">
-                <label for="username" class="form-label">Username</label>
+                <label for="username" class="form-label">{{ i18n.t('usernameLabel') }}</label>
                 <input type="text" id="username" [(ngModel)]="username" name="username" class="form-input"
-                    placeholder="Enter your username" [disabled]="loading()" />
+                    [placeholder]="i18n.t('usernamePlaceholder')" [disabled]="loading()" />
             </div>
 
             <div class="form-group">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label">{{ i18n.t('passwordLabel') }}</label>
                 <input type="password" id="password" [(ngModel)]="password" name="password" class="form-input"
-                    placeholder="Enter your password" [disabled]="loading()" />
+                    [placeholder]="i18n.t('passwordPlaceholder')" [disabled]="loading()" />
             </div>
 
             @if (error()) {
             <div class="error-message">{{ error() }}</div>
             }
 
-            <button type="submit" class="login-button" [disabled]="loading()">
-                {{ loading() ? 'Connecting...' : 'Sign In' }}
+            <button type="submit" class="login-button" [disabled]="loading() || i18n.loading()">
+                {{ loading() ? i18n.t('connecting') : i18n.t('signIn') }}
             </button>
         </form>
     </div>
