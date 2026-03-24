@@ -1,5 +1,5 @@
-dateFormat,yyyy-MM-dd
-timeFormat,hh:mm a
+dateFormat,dd/MM/yyyy
+timeFormat,HH:mm
 brandTitle,Your Car Your Way
 subtitle,Chat Application
 usernameLabel,Username

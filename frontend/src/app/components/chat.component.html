@@ -1,7 +1,7 @@
 <div class="chat-container">
     <div class="chat-sidebar">
         <div class="sidebar-header">
-            <h2>Connected Users</h2>
+            <h2>{{ i18n.t('connectedUsers') }}</h2>
             <span class="user-count">{{ onlineUsers().length }}</span>
         </div>
 
@@ -12,7 +12,7 @@
                 <div class="user-info">
                     <p class="username">{{ currentUser()!.username }}</p>
                     <span class="role" [class]="getRoleClass(currentUser()!.role)">
-                        {{ currentUser()!.role }}
+                        {{ getRoleLabel(currentUser()!.role) }}
                     </span>
                 </div>
             </div>
@@ -20,14 +20,14 @@
         </div>
 
         <div class="online-users">
-            <p class="section-title">Online Now</p>
+            <p class="section-title">{{ i18n.t('onlineNow') }}</p>
             @for (user of onlineUsers(); track user.id) {
             <div class="user-card" [class.highlight]="user.id === currentUser()?.id">
                 <div class="user-avatar">{{ user.username.charAt(0).toUpperCase() }}</div>
                 <div class="user-info">
                     <p class="username">{{ user.username }}</p>
                     <span class="role" [class]="getRoleClass(user.role)">
-                        {{ user.role }}
+                        {{ getRoleLabel(user.role) }}
                     </span>
                 </div>
                 <div class="status-indicator"></div>
@@ -36,13 +36,13 @@
         </div>
 
         <button class="logout-button" (click)="logout()" [disabled]="loadingLogout()">
-            {{ loadingLogout() ? 'Disconnecting...' : 'Disconnect' }}
+            {{ loadingLogout() ? i18n.t('disconnecting') : i18n.t('disconnect') }}
         </button>
     </div>
 
     <div class="chat-main">
         <div class="chat-header">
-            <h1>Chat Room</h1>
+            <h1>{{ i18n.t('chatRoom') }}</h1>
         </div>
 
         <div class="messages-container">
@@ -61,9 +61,9 @@
         <div class="input-container">
             <div class="input-wrapper">
                 <input type="text" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()"
-                    placeholder="Type a message..." class="message-input" />
+                    [placeholder]="i18n.t('typeAMessage')" class="message-input" />
                 <button (click)="sendMessage()" [disabled]="!newMessage().trim()" class="send-button">
-                    Send
+                    {{ i18n.t('send') }}
                 </button>
             </div>
         </div>

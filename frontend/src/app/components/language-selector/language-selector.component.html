@@ -1,0 +1,8 @@
+<div class="language-selector">
+    @for (loc of locales; track loc.id) {
+    <button (click)="select(loc.id)" [class.active]="i18n.currentLocale() === loc.id" [title]="loc.name"
+        class="lang-btn">
+        <span class="flag">{{ loc.flag }}</span>
+    </button>
+    }
+</div>

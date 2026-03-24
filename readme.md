@@ -207,7 +207,8 @@ L'application sera accessible à **http://localhost:4200**
 
 ```mermaid
 
-graph TD
+graph TD;
+
     A[Frontend Angular
     4200] --> B[API Gateway
     8080]
